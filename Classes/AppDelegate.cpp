@@ -39,6 +39,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     
     // 画面サイズ
     glview->setDesignResolutionSize(480, 320, ResolutionPolicy::SHOW_ALL);
+    
+    FileUtils::getInstance()->addSearchPath("images");
 
     // create a scene. it's an autorelease object
     auto scene = MainScene::createScene();
