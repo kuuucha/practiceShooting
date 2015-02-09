@@ -38,7 +38,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setAnimationInterval(1.0 / 60);
     
     // 画面サイズ
-    glview->setDesignResolutionSize(480, 320, ResolutionPolicy::SHOW_ALL);
+    glview->setDesignResolutionSize(320, 480, ResolutionPolicy::SHOW_ALL);
     
     FileUtils::getInstance()->addSearchPath("images");
 
