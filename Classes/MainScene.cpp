@@ -99,6 +99,7 @@ void MainScene::update(float dt)
 
 Sprite* MainScene::addPlayerBullet()
 {
+    auto visibleSize = Director::getInstance()->getVisibleSize();
     // 弾を作成
     auto playerBullet = Sprite::create("tama_kari.png");
     // 位置をセット
@@ -109,7 +110,7 @@ Sprite* MainScene::addPlayerBullet()
     _playerBullets.pushBack(playerBullet);
 
     // プレイヤー弾を飛ばす
-    auto shoot = MoveBy::create(3, Vec2(playerBullet->getPosition().x, 480));
+    auto shoot = MoveTo::create(3, Vec2(playerBullet->getPosition().x, visibleSize.height));
     
     auto remove = CallFuncN::create([this](Node *node) {
         // NodeをSpriteにダウンキャスト
