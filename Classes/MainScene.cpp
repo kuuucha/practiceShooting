@@ -6,15 +6,22 @@
 //
 //
 
+#include <random>
 #include "MainScene.h"
 
 USING_NS_CC;
 
+// 敵出現率
+const float ENEMY_PROBABILITY_RATE = 0.02;
+
 MainScene::MainScene()
 : _player(NULL)
 , _shootFlg(false)
+, _isClash(false)
 {
-    
+    // 乱数の初期化
+    std::random_device rdev;
+    _engine.seed(rdev());
 }
 
 MainScene::~MainScene()
@@ -95,6 +102,58 @@ void MainScene::update(float dt)
     if (this->getShootFlg()) {
         this->addPlayerBullet();
     }
+    
+    float r = this->generateRandom(0, 1);
+    if (r <= ENEMY_PROBABILITY_RATE) {
+        // 敵出現
+        this->addEnemy();
+    }
+    
+    // 敵とのあたり判定
+    for (auto& enemy : _enemys)
+    {
+        // 矩形
+        Rect enemyRect = enemy->getBoundingBox();
+        Rect playerRect = _player->getBoundingBox();
+        
+        // 敵とプレイヤーが衝突した場合
+        if (playerRect.intersectsRect(enemyRect))
+        {
+            // 敵をマップから削除
+            enemy->removeFromParent();
+            _enemys.eraseObject(enemy);
+            this->removeEnemy(enemy);
+            
+            // プレイヤーをクラッシュ
+            this->setIsClash(true);
+        }
+        
+        // 敵とプレイヤー弾が衝突した場合
+        for (auto& bullet : _playerBullets)
+        {
+            Rect bulletRect = bullet->getBoundingBox();
+            
+            if (enemyRect.intersectsRect(bulletRect))
+            {
+                // 敵をマップから削除
+                enemy->removeFromParent();
+                _enemys.eraseObject(enemy);
+                this->removeEnemy(enemy);
+                
+                // プレイヤー弾をマップから削除
+                bullet->removeFromParent();
+                _playerBullets.eraseObject(bullet);
+                this->removePlayerBullet(bullet);
+            }
+        }
+    }
+    
+    // プレイヤーがクラッシュしている場合
+    if (this->_isClash)
+    {
+        log("クラッシュ");
+        this->setIsClash(false);
+    }
 }
 
 Sprite* MainScene::addPlayerBullet()
@@ -137,5 +196,43 @@ bool MainScene::removePlayerBullet(cocos2d::Sprite *playerBullet)
         return true;
     }
 
+    return false;
+}
+
+float MainScene::generateRandom(float min, float max)
+{
+    std::uniform_real_distribution<float> dest(min, max);
+    return dest(_engine);
+}
+
+Sprite* MainScene::addEnemy()
+{
+    auto winSize = Director::getInstance()->getWinSize();
+    // 敵を作成
+    auto enemy = Sprite::create("player_kari.png");
+    // 出現位置
+    auto enemySize = enemy->getContentSize();
+    float enemyXPos = this->generateRandom(enemySize.width / 2.0, winSize.width - enemySize.width / 2.0);
+    float enemyYPos = this->generateRandom(winSize.height / 2.0, winSize.height - enemySize.height / 2.0);
+    enemy->setPosition(Vec2(enemyXPos, enemyYPos));
+    
+    this->addChild(enemy);
+    _enemys.pushBack(enemy);
+    
+    return enemy;
+}
+
+bool MainScene::removeEnemy(cocos2d::Sprite *enemy)
+{
+    if (_enemys.contains(enemy))
+    {
+        // 親ノードから削除
+        enemy->removeFromParent();
+        // _enemysから削除
+        _enemys.eraseObject(enemy);
+        
+        return true;
+    }
+    
     return false;
 }
