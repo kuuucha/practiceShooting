@@ -10,6 +10,9 @@
 #define __ShootingGame__MainScene__
 
 #include "cocos2d.h"
+#include "Player.h"
+#include "Enemy.h"
+#include "Bullet.h"
 
 class MainScene :public cocos2d::Layer
 {
@@ -22,13 +25,13 @@ protected:
     /** プレイヤー弾を作成
      * @return 作成したプレイヤー弾
      */
-    cocos2d::Sprite *addPlayerBullet();
+    Bullet *addPlayerBullet();
     
     /** プレイヤー弾をマップから取り除く
      * @param 削除するプレイヤー弾
      * @return 削除されたか
      */
-    bool removePlayerBullet(cocos2d::Sprite *playerBullet);
+    bool removePlayerBullet(Bullet *playerBullet);
     
     /** min ~ maxの乱数をfloatで返す
      * @param min
@@ -40,23 +43,21 @@ protected:
     /** 敵を作成
      * @return 作成した敵
      */
-    cocos2d::Sprite *addEnemy();
+    Enemy *addEnemy();
     
     /** 敵をマップから取り除く
      * @param 削除する敵
      * @return 削除されたか
      */
-    bool removeEnemy(cocos2d::Sprite *enemy);
+    bool removeEnemy(Enemy *enemy);
     
 public:
     static cocos2d::Scene* createScene();
     CREATE_FUNC(MainScene);
-    CC_SYNTHESIZE(bool, _shootFlg, ShootFlg);
-    CC_SYNTHESIZE(cocos2d::Vector<cocos2d::Sprite *>, _playerBullets, PlayerBullets);
+    CC_SYNTHESIZE(cocos2d::Vector<Bullet *>, _playerBullets, PlayerBullets);
     CC_SYNTHESIZE(std::mt19937, _engine, Engine);
-    CC_SYNTHESIZE(cocos2d::Vector<cocos2d::Sprite *>, _enemys, Enemys);
-    CC_SYNTHESIZE(bool, _isClash, IsClash);
-    CC_SYNTHESIZE_RETAIN(cocos2d::Sprite *, _player, Player);
+    CC_SYNTHESIZE(cocos2d::Vector<Enemy *>, _enemys, Enemys);
+    CC_SYNTHESIZE_RETAIN(Player *, _player, Player);
     
 };
 

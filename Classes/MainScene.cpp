@@ -16,8 +16,6 @@ const float ENEMY_PROBABILITY_RATE = 0.02;
 
 MainScene::MainScene()
 : _player(NULL)
-, _shootFlg(false)
-, _isClash(false)
 {
     // 乱数の初期化
     std::random_device rdev;
@@ -54,18 +52,18 @@ bool MainScene::init()
     this->addChild(background);
     
     // プレイヤー
-    auto player = Sprite::create("player_kari.png");
+    Player* player = Player::create();
+    player->setPosition(Vec2(winSize.width / 2.0, player->getContentSize().height / 2.0));
     this->setPlayer(player);
-    _player->setPosition(Vec2(winSize.width /2.0, player->getContentSize().height / 2.0));
     this->addChild(_player);
-
+    
     auto listener = EventListenerTouchOneByOne::create();
     listener->onTouchBegan = [this](Touch* touch, Event* event) {
         // タッチされたときの処理
         log("Touch at (%f, %f)", touch->getLocation().x, touch->getLocation().y);
         
         // 垂れ流しフラグ
-        this->setShootFlg(true);
+        _player->setShootFlg(true);
 
         return true;
     };
@@ -86,32 +84,37 @@ bool MainScene::init()
     };
     listener->onTouchEnded = [this] (Touch* touch, Event* event) {
         // タッチが終わったとき
-        this->setShootFlg(false);
+        _player->setShootFlg(false);
     };
     
     director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+
     // updateを毎フレーム実行
     this->scheduleUpdate();
-    
+
     return true;
 }
 
 void MainScene::update(float dt)
 {
     // タッチ中
-    if (this->getShootFlg()) {
+    if (_player->getShootFlg()) {
         this->addPlayerBullet();
     }
-    
+
     float r = this->generateRandom(0, 1);
     if (r <= ENEMY_PROBABILITY_RATE) {
         // 敵出現
         this->addEnemy();
     }
-    
+
     // 敵とのあたり判定
     for (auto& enemy : _enemys)
     {
+        if (!enemy->getParent()){
+            continue;
+        }
+        
         // 矩形
         Rect enemyRect = enemy->getBoundingBox();
         Rect playerRect = _player->getBoundingBox();
@@ -120,12 +123,10 @@ void MainScene::update(float dt)
         if (playerRect.intersectsRect(enemyRect))
         {
             // 敵をマップから削除
-            enemy->removeFromParent();
-            _enemys.eraseObject(enemy);
             this->removeEnemy(enemy);
             
             // プレイヤーをクラッシュ
-            this->setIsClash(true);
+            _player->setIsClash(true);
         }
         
         // 敵とプレイヤー弾が衝突した場合
@@ -136,31 +137,26 @@ void MainScene::update(float dt)
             if (enemyRect.intersectsRect(bulletRect))
             {
                 // 敵をマップから削除
-                enemy->removeFromParent();
-                _enemys.eraseObject(enemy);
                 this->removeEnemy(enemy);
                 
                 // プレイヤー弾をマップから削除
-                bullet->removeFromParent();
-                _playerBullets.eraseObject(bullet);
                 this->removePlayerBullet(bullet);
             }
         }
     }
-    
+
     // プレイヤーがクラッシュしている場合
-    if (this->_isClash)
+    if (_player->getIsClash())
     {
-        log("クラッシュ");
-        this->setIsClash(false);
+        _player->setIsClash(false);
     }
 }
 
-Sprite* MainScene::addPlayerBullet()
+Bullet *MainScene::addPlayerBullet()
 {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     // 弾を作成
-    auto playerBullet = Sprite::create("tama_kari.png");
+    auto playerBullet = Bullet::create();
     // 位置をセット
     auto playerPosition = _player->getPosition();
     playerBullet->setPosition(Vec2(playerPosition.x, playerPosition.y));
@@ -173,7 +169,7 @@ Sprite* MainScene::addPlayerBullet()
     
     auto remove = CallFuncN::create([this](Node *node) {
         // NodeをSpriteにダウンキャスト
-        auto sprite = dynamic_cast<Sprite *>(node);
+        auto sprite = dynamic_cast<Bullet *>(node);
         
         // remove
         this->removePlayerBullet(sprite);
@@ -185,7 +181,7 @@ Sprite* MainScene::addPlayerBullet()
     return playerBullet;
 }
 
-bool MainScene::removePlayerBullet(cocos2d::Sprite *playerBullet)
+bool MainScene::removePlayerBullet(Bullet *playerBullet)
 {
     if (_playerBullets.contains(playerBullet)) {
         // 親ノードから削除
@@ -205,24 +201,25 @@ float MainScene::generateRandom(float min, float max)
     return dest(_engine);
 }
 
-Sprite* MainScene::addEnemy()
+Enemy *MainScene::addEnemy()
 {
     auto winSize = Director::getInstance()->getWinSize();
     // 敵を作成
-    auto enemy = Sprite::create("player_kari.png");
+    auto enemy = Enemy::create();
+
     // 出現位置
     auto enemySize = enemy->getContentSize();
     float enemyXPos = this->generateRandom(enemySize.width / 2.0, winSize.width - enemySize.width / 2.0);
     float enemyYPos = this->generateRandom(winSize.height / 2.0, winSize.height - enemySize.height / 2.0);
     enemy->setPosition(Vec2(enemyXPos, enemyYPos));
-    
+
     this->addChild(enemy);
     _enemys.pushBack(enemy);
-    
+
     return enemy;
 }
 
-bool MainScene::removeEnemy(cocos2d::Sprite *enemy)
+bool MainScene::removeEnemy(Enemy *enemy)
 {
     if (_enemys.contains(enemy))
     {
