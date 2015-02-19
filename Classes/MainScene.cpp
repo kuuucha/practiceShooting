@@ -13,6 +13,8 @@ USING_NS_CC;
 
 // 敵出現率
 const float ENEMY_PROBABILITY_RATE = 0.02;
+// 背景スライドスピード終了までの秒数
+const float BACKGROUND_SLIDE_TIME = 30;
 
 MainScene::MainScene()
 : _player(NULL)
@@ -50,6 +52,11 @@ bool MainScene::init()
     auto background = Sprite::create("background_kari.png");
     background->setPosition(Vec2(winSize.width / 2.0, winSize.height / 2.0));
     this->addChild(background);
+    
+    // 背景を動かす
+    auto backSlide = MoveTo::create(BACKGROUND_SLIDE_TIME, Vec2(winSize.width / 2.0, 0));
+    auto sequence = Sequence::create(backSlide, NULL);
+    background->runAction(sequence);
     
     // プレイヤー
     Player* player = Player::create();
