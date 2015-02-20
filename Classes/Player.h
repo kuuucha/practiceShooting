@@ -21,7 +21,13 @@ protected:
 public:
     CC_SYNTHESIZE(bool, _shootFlg, ShootFlg);
     CC_SYNTHESIZE(bool, _isClash, IsClash);
+    CC_SYNTHESIZE(int, life, Life);
     CREATE_FUNC(Player);
+    
+    /** クラッシュ
+     */
+    void playerClash();
+
 };
 
 #endif /* defined(__ShootingGame__Player__) */

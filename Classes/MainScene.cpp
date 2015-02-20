@@ -133,7 +133,7 @@ void MainScene::update(float dt)
             this->removeEnemy(enemy);
             
             // プレイヤーをクラッシュ
-            _player->setIsClash(true);
+            _player->playerClash();
         }
         
         // 敵とプレイヤー弾が衝突した場合
@@ -150,12 +150,6 @@ void MainScene::update(float dt)
                 this->removePlayerBullet(bullet);
             }
         }
-    }
-
-    // プレイヤーがクラッシュしている場合
-    if (_player->getIsClash())
-    {
-        _player->setIsClash(false);
     }
 }
 

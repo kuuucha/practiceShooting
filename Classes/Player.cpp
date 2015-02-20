@@ -10,9 +10,12 @@
 
 USING_NS_CC;
 
+// ライフ
+const int PLAYER_LIFE = 5;
+
 Player::Player()
 : _shootFlg(false)
-, _isClash(false)
+, life(PLAYER_LIFE)
 {
     
 }
@@ -25,4 +28,11 @@ Player::~Player()
 bool Player::init()
 {
     return this->initWithFile("player_kari.png");
+}
+
+void Player::playerClash()
+{
+    this->setLife(this->getLife() - 1);
+    
+    log("ライフ %d", this->getLife());
 }
